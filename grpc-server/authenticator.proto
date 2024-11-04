@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package authenticator;
+
+import "errors.proto";
+
+service Authenticator {
+  rpc Register (RegisterRequest) returns  (RegisterResponse);
+  rpc Login (LoginRequest) returns  (LoginResponse);
+}
+
+message RegisterRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message RegisterResponse{
+  optional string token = 1;
+  optional errors.Error error = 2;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse{
+  optional string token = 1;
+  optional errors.Error error = 2;
+}

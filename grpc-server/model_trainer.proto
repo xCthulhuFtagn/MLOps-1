@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package model_trainer;
+
+import "errors.proto";
+
+service ModelTrainer {
+  rpc Train (TrainRequest) returns  (TrainResponse);
+  rpc ListAvailableModels (ListAvailableModelsRequest) returns (ListAvailableModelsResponse);
+  rpc GetPrediction (GetPredictionRequest) returns (GetPredictionResponse);
+}
+
+message TrainRequest {
+  string modelClass = 1;
+  map<string, string> hyperParams = 2;
+  optional string token = 3;
+}
+
+message TrainResponse {
+ string modelClass = 1;
+ optional errors.Error error = 2;
+}
+
+
+message ListAvailableModelsRequest {
+  optional string token = 1;
+}
+
+message ListAvailableModelsResponse {
+  repeated string modelClasses = 1;
+  optional errors.Error error = 2;
+}
+
+message GetPredictionRequest {
+  string modelClass = 1;
+  optional string token = 2;
+}
+
+message GetPredictionResponse {
+  repeated float predictionResult = 1;
+  optional errors.Error error = 2;
+}
+
+
