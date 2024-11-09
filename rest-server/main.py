@@ -59,14 +59,17 @@ async def train_model(username:str, password: str, model_class: str, hyper_param
     if token is None:
         return {"error": "Invalid credentials"}
     # response = model_trainer.train(model_class, hyper_params)
-    return JSONResponse(status_code=200, background=BackgroundTask(model_trainer.train, (model_class, hyper_params)), content={"model_status": "training"})
-
+    if ModelTrainService.model_status[model_class] != "training":
+        return JSONResponse(status_code=200, background=BackgroundTask(model_trainer.train, (model_class, hyper_params)), content={"model_status": "training"})
+    else:
+        return PermissionError("Model is already training")
+    
 @app.get("/check_model")
 async def check_model(username:str, password: str, model_class: str):
     token = authentificator.login(username, password)
     if token is None:
         return {"error": "Invalid credentials"}
-    response = model_trainer.is_model_in_training(model_class)
+    response = ModelTrainService.model_status[model_class]
     return response
     
 @app.post("/predict")
@@ -79,24 +82,27 @@ async def predict(username:str, password: str, model_class: str, data_file: Uplo
         raise ValueError("Wrong file format, only working with .csv")
     
     df = pd.read_csv(data_file)
-    if ModelTrainService.is_model_in_training(model_class):
-        return InterruptedError("Model still in training")
+    if ModelTrainService.model_status[model_class] != "ready":
+        if ModelTrainService.model_status[model_class] == "training":
+            raise PermissionError("Model is still training")
+        else:
+            raise ModelTrainService.model_status[model_class]
     
     response = model_trainer.predict(model_class, df)
 
-@app.post("/predict")
-async def predict(username:str, password: str, model_class: str, data_file: UploadFile):
-    token = authentificator.login(username, password)
-    if token is None:
-        return {"error": "Invalid credentials"}
+# @app.post("/predict")
+# async def predict(username:str, password: str, model_class: str, data_file: UploadFile):
+#     token = authentificator.login(username, password)
+#     if token is None:
+#         return {"error": "Invalid credentials"}
 
-    if not data_file.name.endswith("csv"):
-        raise ValueError("Wrong file format, only working with .csv")
+#     if not data_file.name.endswith("csv"):
+#         raise ValueError("Wrong file format, only working with .csv")
     
-    df = pd.read_csv(data_file)
-    if ModelTrainService.is_model_in_training(model_class):
-        return InterruptedError("Model still in training")
+#     df = pd.read_csv(data_file.file)
+#     if ModelTrainService.model_status[model_class]:
+#         raise PermissionError("Model still in training")
     
-    response = model_trainer.predict(model_class, df)
+#     response = model_trainer.predict(model_class, df)
 
     
