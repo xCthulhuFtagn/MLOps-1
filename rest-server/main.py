@@ -1,6 +1,9 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Header, Depends, Form
+from fastapi.security  import HTTPBearer,HTTPAuthorizationCredentials
 from typing import Dict
 from pydantic import BaseModel
+from pandas import DataFrame, Series
+
 
 from modules.services.auth_service import AuthService
 from modules.services.model_trainer_service import ModelTrainService
@@ -9,6 +12,11 @@ import pandas as pd
 
 from starlette.background import BackgroundTask
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
+
+from typing import Annotated
+
+auth_scheme = HTTPBearer()
 
 # TODO:
 # Add tokens to REST
@@ -19,11 +27,18 @@ from fastapi.responses import JSONResponse
 # Add pythonDocs for functions
 # Get analytics:
 #  Интерактивный дашборд streamlit/gradio/etc. (можно отдельным сервисом, просто его запуск должен быть прописан в инструкции)
-
-app = FastAPI()
-
 authentificator = AuthService()
 model_trainer = ModelTrainService()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the ML model
+    # authentificator = AuthService()
+    # model_trainer = ModelTrainService()
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
 
 class HealthCheckResponse(BaseModel):
     status: str
@@ -33,6 +48,10 @@ class LoginResponse(BaseModel):
 
 class RegisterResponse(BaseModel):
     token: str
+
+class TrainModelRequest(BaseModel):
+    model_class: str
+    hyper_params: Dict  = {}
 
 
 @app.get("/healthcheck",status_code=200)
@@ -54,55 +73,58 @@ async def login(username:str, password: str):
     return LoginResponse(token = response)
 
 @app.post("/train_model")
-async def train_model(username:str, password: str, model_class: str, hyper_params: Dict,token: Union[str, None] = Header(alias="Authorization",default=None)):
-    token = authentificator.login(username, password)
+async def train_model(body: TrainModelRequest,token: HTTPAuthorizationCredentials = Depends(auth_scheme)):
     if token is None:
         return {"error": "Invalid credentials"}
-    # response = model_trainer.train(model_class, hyper_params)
-    if ModelTrainService.model_status[model_class] != "training":
-        return JSONResponse(status_code=200, background=BackgroundTask(model_trainer.train, (model_class, hyper_params)), content={"model_status": "training"})
-    else:
+    
+    is_token_valid = authentificator.checkToken(token.credentials)
+    if is_token_valid is False:
+        return {"error": "Invalid credentials"}
+    if model_trainer.status_model.get(body.model_class, "not initialized")  != "training":
+        print("model is starting to train" )
+        return JSONResponse(status_code=200, background=BackgroundTask(model_trainer.train, body.model_class, body.hyper_params), content={"model_status": "training"})
+    else:  
         return PermissionError("Model is already training")
     
 @app.get("/check_model")
-async def check_model(username:str, password: str, model_class: str):
-    token = authentificator.login(username, password)
+async def check_model(model_class: str,token: HTTPAuthorizationCredentials = Depends(auth_scheme)):
     if token is None:
         return {"error": "Invalid credentials"}
-    response = ModelTrainService.model_status[model_class]
+    
+    is_token_valid = authentificator.checkToken(token.credentials)
+    if is_token_valid is False:
+        return {"error": "Invalid credentials"}
+    
+    response = model_trainer.status_model.get(model_class, f"No pretrained instance of {model_class}")
     return response
-    
-@app.post("/predict")
-async def predict(username:str, password: str, model_class: str, data_file: UploadFile):
-    token = authentificator.login(username, password)
+
+@app.get('/list_models')
+async def list_models(token: HTTPAuthorizationCredentials = Depends(auth_scheme)):
     if token is None:
         return {"error": "Invalid credentials"}
+    
+    
+    is_token_valid = authentificator.checkToken(token.credentials)
+    if is_token_valid is False:
+        return {"error": "Invalid credentials"}
+    
+    response =model_trainer.available_model_classes()
+    return response
 
-    if not data_file.name.endswith("csv"):
-        raise ValueError("Wrong file format, only working with .csv")
+@app.post("/predict")
+async def predict( model_class:str = Form(),file:UploadFile=File(),token: HTTPAuthorizationCredentials = Depends(auth_scheme)):
+    if token is None:
+        return {"error": "Invalid credentials"}
     
-    df = pd.read_csv(data_file)
-    if ModelTrainService.model_status[model_class] != "ready":
-        if ModelTrainService.model_status[model_class] == "training":
-            raise PermissionError("Model is still training")
-        else:
-            raise ModelTrainService.model_status[model_class]
-    
-    response = model_trainer.predict(model_class, df)
+    is_token_valid = authentificator.checkToken(token.credentials)
+    if is_token_valid is False:
+        return {"error": "Invalid credentials"}
 
-# @app.post("/predict")
-# async def predict(username:str, password: str, model_class: str, data_file: UploadFile):
-#     token = authentificator.login(username, password)
-#     if token is None:
-#         return {"error": "Invalid credentials"}
+    if not file.filename.endswith("csv"):
+        raise TypeError("Wrong file format, only working with .csv")
+    
+    df = pd.read_csv(file.file, index_col=0) 
 
-#     if not data_file.name.endswith("csv"):
-#         raise ValueError("Wrong file format, only working with .csv")
-    
-#     df = pd.read_csv(data_file.file)
-#     if ModelTrainService.model_status[model_class]:
-#         raise PermissionError("Model still in training")
-    
-#     response = model_trainer.predict(model_class, df)
+    response = DataFrame(model_trainer.predict(model_class, df)).astype(float)
 
-    
+    return response

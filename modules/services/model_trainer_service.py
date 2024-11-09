@@ -12,14 +12,13 @@ from concurrent import futures
 import threading
 
 model_dir_path = "/home/owner/Documents/DEV/MLOps/HW1/models"
-regressor_dir_path = f'{model_dir_path}/regressor'
-classifier_dir_path = f'{model_dir_path}/classifier'
+regressor_dir_path = f'{model_dir_path}'
+classifier_dir_path = f'{model_dir_path}'
 
 class ModelTrainService():
     def __init__(self):
         classification_dataset = load_iris()
         self.X_train_cl, self.y_train_cl = classification_dataset.data, classification_dataset.target
-        # self.X_train_cl, self.X_test_cl, self.y_train_cl, self.y_test_cl = train_test_split(X, y, test_size=0.2)
         # Id
         # SepalLengthCm
         # SepalWidthCm
@@ -29,7 +28,6 @@ class ModelTrainService():
 
         regression_dataset = fetch_california_housing()
         self.X_train_reg, self.y_train_reg = classification_dataset.data, classification_dataset.target
-        # self.X_train_reg, self.X_test_reg, self.y_train_reg, self.y_test_reg = train_test_split(X, y, test_size=0.2)
         # MedInc	
         # HouseAge	
         # AveRooms	
@@ -39,74 +37,56 @@ class ModelTrainService():
         # Latitude	
         # Longitude
         # Price (target)
-
         self.training_thread = None
-        self.training_status = "ready"
         self.classifier_lock = threading.Lock()
         self.regressor_lock = threading.Lock()
         
-        
-        self.model_status = {
-            "GradientBoostingRegressor": "not created",
-            "GradientBoostingClassifier": "not created"
-        }
+        print("set status model")
+        self.status_model = dict()
+        for model in os.listdir(f"{model_dir_path}"):
+            model_name = model.split(".")[0]
+            self.status_model[model_name] = "ready"
 
     def train(self, model_class: str, hyper_params: Dict) -> str:
-        match model_class:
-            case "GradientBoostingRegressor":
-                if self.is_model_in_training(model_class):
-                    return
-                with self.regressor_lock:
-                    self.model_status[model_class] = "training"
-                    try:
-                        model = GradientBoostingRegressor(*hyper_params)
-                        model.train(self.X_train_reg, self.y_train_reg)
-                        with open(f'{regressor_dir_path}/model.pkl') as f:
-                            pickle.dump(model,f)
-                        self.model_status = "ready" 
-                    except Exception as e:
-                        self.model_status = e
-            case "GradientBoostingClassifier":
-                if self.is_model_in_training(model_class):
-                    return
-                with self.classifier_lock:
-                    self.model_status[model_class] = "training"
-                    try:
-                        model = GradientBoostingClassifier(*hyper_params)
-                        X, y = self.classification_dataset.data, self.classification_dataset.target
-                        model.train(self.X_train_cl, self.y_train_cl)
-                        with open(f'{classifier_dir_path}/model.pkl') as f:
-                            pickle.dump(model,f)
-                        self.model_status = "ready" 
-                    except Exception as e:
-                        self.model_status = e
-            case _:
-                return
-                # raise ValueError(f"Invalid model class: {model_class}")
+        if model_class not in self.available_model_classes(): return
+        try:
+            match model_class:
+                case "GradientBoostingClassifier":
+                    model = GradientBoostingClassifier(*hyper_params)
+                    model.fit(self.X_train_cl, self.y_train_cl)
+                case "GradientBoostingRegressor": 
+                    model = GradientBoostingRegressor(*hyper_params)
+                    model.fit(self.X_train_reg, self.y_train_reg)
+            with open(f'{regressor_dir_path}/{model_class}.pkl', 'wb') as f:
+                pickle.dump(model,f)
+            self.status_model[model_class] = "ready" 
+        except Exception as e:
+            self.status_model[model_class] = e
 
     def predict(self, model_class: str, inference_data: pd.DataFrame):
         match model_class:
             case "GradientBoostingRegressor":
-                # check if model exists
-                if os.path.exists(f'{regressor_dir_path}/model.pkl'):
-                    if self.model_status[model_class] == "ready":
-                        model = pickle.load(f'{regressor_dir_path}/model.pkl')
-                    else:
-                        raise ValueError(f"Model is {self.model_status[model_class]}")
-                else:
-                    raise FileNotFoundError("No pretrained regressors available")
-                pred = model.predict(inference_data)
+                path = regressor_dir_path
             case "GradientBoostingClassifier":
-                if os.path.exists(f'{classifier_dir_path}/model.pkl'):
-                    if self.model_status[model_class] == "ready":
-                        model = pickle.load(f'{classifier_dir_path}/model.pkl')
-                    else:
-                        raise ValueError(f"Model is {self.model_status[model_class]}")
-                else:
-                    raise FileNotFoundError("No pretrained classifiers available")
-                pred = model.predict(inference_data)
+                path = classifier_dir_path
             case _:
                 raise ValueError(f"Invalid model class: {model_class}")
+            
+        if os.path.exists(f'{path}/{model_class}.pkl'):
+            status = self.status_model.get(model_class, KeyError(f"No status for {model_class} available"))
+            match status:
+                case "ready": 
+                    with open(f'{regressor_dir_path}/{model_class}.pkl', 'rb') as f:
+                        model = pickle.load(f)
+                case "training": 
+                    raise ValueError(f"{model_class} is still training")
+                case _:
+                    raise status
+        else:
+            raise FileNotFoundError(f"No pretrained {model_class} available")
+        
+        pred = model.predict(inference_data)
+
         return pred
     
     def available_model_classes(self):

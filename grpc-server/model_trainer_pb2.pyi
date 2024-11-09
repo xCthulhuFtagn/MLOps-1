@@ -46,17 +46,19 @@ class ListAvailableModelsResponse(_message.Message):
     def __init__(self, modelClasses: _Optional[_Iterable[str]] = ..., error: _Optional[_Union[_errors_pb2.Error, _Mapping]] = ...) -> None: ...
 
 class GetPredictionRequest(_message.Message):
-    __slots__ = ("modelClass", "token")
+    __slots__ = ("modelClass", "token", "fileData")
     MODELCLASS_FIELD_NUMBER: _ClassVar[int]
     TOKEN_FIELD_NUMBER: _ClassVar[int]
+    FILEDATA_FIELD_NUMBER: _ClassVar[int]
     modelClass: str
     token: str
-    def __init__(self, modelClass: _Optional[str] = ..., token: _Optional[str] = ...) -> None: ...
+    fileData: bytes
+    def __init__(self, modelClass: _Optional[str] = ..., token: _Optional[str] = ..., fileData: _Optional[bytes] = ...) -> None: ...
 
 class GetPredictionResponse(_message.Message):
-    __slots__ = ("predictionResult", "error")
-    PREDICTIONRESULT_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("prediction", "error")
+    PREDICTION_FIELD_NUMBER: _ClassVar[int]
     ERROR_FIELD_NUMBER: _ClassVar[int]
-    predictionResult: _containers.RepeatedScalarFieldContainer[float]
+    prediction: _containers.RepeatedScalarFieldContainer[float]
     error: _errors_pb2.Error
-    def __init__(self, predictionResult: _Optional[_Iterable[float]] = ..., error: _Optional[_Union[_errors_pb2.Error, _Mapping]] = ...) -> None: ...
+    def __init__(self, prediction: _Optional[_Iterable[float]] = ..., error: _Optional[_Union[_errors_pb2.Error, _Mapping]] = ...) -> None: ...

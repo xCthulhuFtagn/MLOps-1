@@ -35,9 +35,12 @@ class AuthService():
             jwt.decodeError: If the token cannot be decoded.
         """
         try:
-            jwt.decode(token, self.__secret)
+            jwt.decode(jwt=token,key=self.__secret,algorithms=["HS256"])
             return True
-        except jwt.decodeError:
+        except jwt.DecodeError:
+            print(token,self.__secret)
+            # print(repr(jwt.DecodeError))
+            # print(jwt.DecodeError.__cause__)
             print("Error decoding token")
             return False
     def login(self, username:str,password:str)->str | None:

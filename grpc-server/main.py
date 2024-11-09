@@ -8,6 +8,8 @@ import errors_pb2
 import errors_pb2_grpc
 import healthcheck_pb2
 import healthcheck_pb2_grpc
+import io
+import pandas as pd
 
 from modules.services.auth_service import AuthService
 from modules.services.model_trainer_service import ModelTrainService
@@ -44,6 +46,10 @@ class ModelTrainerServicer(model_trainer_pb2_grpc.ModelTrainerServicer):
         return model_trainer_pb2.ListAvailableModelsResponse(modelClasses=available_models)
     
     def GetPrediction(self, request:model_trainer_pb2.GetPredictionRequest, context):
+        file = io.BytesIO(request.fileData)
+        df = pd.read_csv(request.fileData, index_col=0) 
+        # ReadCsvBuffer[bytes]
+        
         isAuth = self.__authenticatorService.checkToken(token=request.token)
         if isAuth == False: 
             error_response = model_trainer_pb2.TrainResponse(error= errors_pb2.Error(code=401,message="Unauthorized"))
@@ -51,7 +57,7 @@ class ModelTrainerServicer(model_trainer_pb2_grpc.ModelTrainerServicer):
             context.set_details('Unauthorized')
             return error_response
         try:
-            prediction = self.__trainService.predict(model_class=request.modelClass, inference_data=request.data)
+            prediction = self.__trainService.predict(model_class=request.modelClass, inference_data=df)
         except Exception as e:
             error_response = model_trainer_pb2.GetPredictionResponse(error= errors_pb2.Error(code=500,message= str(e)))
             context.set_code(grpc.StatusCode.INTERNAL)
