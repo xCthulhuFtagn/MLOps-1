@@ -30,14 +30,7 @@ auth_scheme = HTTPBearer()
 authentificator = AuthService()
 model_trainer = ModelTrainService()
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Load the ML model
-    # authentificator = AuthService()
-    # model_trainer = ModelTrainService()
-    yield
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 
 class HealthCheckResponse(BaseModel):
