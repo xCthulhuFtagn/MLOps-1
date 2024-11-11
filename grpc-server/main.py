@@ -46,8 +46,7 @@ class ModelTrainerServicer(model_trainer_pb2_grpc.ModelTrainerServicer):
         return model_trainer_pb2.ListAvailableModelsResponse(modelClasses=available_models)
     
     def GetPrediction(self, request:model_trainer_pb2.GetPredictionRequest, context):
-        file = io.BytesIO(request.fileData)
-        df = pd.read_csv(request.fileData, index_col=0) 
+        df = pd.read_csv(io.BytesIO(request.fileData), index_col=0) 
         # ReadCsvBuffer[bytes]
         
         isAuth = self.__authenticatorService.checkToken(token=request.token)
