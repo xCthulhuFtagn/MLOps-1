@@ -16,47 +16,22 @@ regressor_dir_path = f'{model_dir_path}'
 classifier_dir_path = f'{model_dir_path}'
 
 class ModelTrainService():
-    def __init__(self):
-        classification_dataset = load_iris()
-        self.X_train_cl, self.y_train_cl = classification_dataset.data, classification_dataset.target
-        # Id
-        # SepalLengthCm
-        # SepalWidthCm
-        # PetalLengthCm
-        # PetalWidthCm
-        # Species (target)
-
-        regression_dataset = fetch_california_housing()
-        self.X_train_reg, self.y_train_reg = classification_dataset.data, classification_dataset.target
-        # MedInc	
-        # HouseAge	
-        # AveRooms	
-        # AveBedrms	
-        # Population	
-        # AveOccup	
-        # Latitude	
-        # Longitude
-        # Price (target)
-        self.training_thread = None
-        self.classifier_lock = threading.Lock()
-        self.regressor_lock = threading.Lock()
-        
-        print("set status model")
+    def __init__(self):  
         self.status_model = dict()
         for model in os.listdir(f"{model_dir_path}"):
             model_name = model.split(".")[0]
             self.status_model[model_name] = "ready"
 
-    def train(self, model_class: str, hyper_params: Dict) -> str:
+    def train(self, model_class: str, X:pd.DataFrame, y:pd.DataFrame, hyper_params: Dict) -> str:
         if model_class not in self.available_model_classes(): return
         try:
             match model_class:
                 case "GradientBoostingClassifier":
                     model = GradientBoostingClassifier(*hyper_params)
-                    model.fit(self.X_train_cl, self.y_train_cl)
+                    model.fit(X, y)
                 case "GradientBoostingRegressor": 
                     model = GradientBoostingRegressor(*hyper_params)
-                    model.fit(self.X_train_reg, self.y_train_reg)
+                    model.fit(X, y)
             with open(f'{regressor_dir_path}/{model_class}.pkl', 'wb') as f:
                 pickle.dump(model,f)
             self.status_model[model_class] = "ready" 

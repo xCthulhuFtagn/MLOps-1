@@ -19,7 +19,7 @@ class ModelTrainerServicer(model_trainer_pb2_grpc.ModelTrainerServicer):
         self.__authenticatorService = AuthService()
         self.__trainService = ModelTrainService()
 
-    def Train(self, request, context):
+    def Train(self, request:model_trainer_pb2.GetPredictionRequest, context):
         isAuth = self.__authenticatorService.checkToken(token=request.token)
         if isAuth == False: 
             error_response = model_trainer_pb2.TrainResponse(error= errors_pb2.Error(code=401,message="Unauthorized"))
@@ -27,23 +27,15 @@ class ModelTrainerServicer(model_trainer_pb2_grpc.ModelTrainerServicer):
             context.set_details('Unauthorized')
             return error_response
         try:
-            self.__trainService.train(model_class=request.modelClass,hyper_params=request.hyperParams)
+            X = pd.read_csv(io.BytesIO(request.features), index_col=0)
+            y = pd.read_csv(io.BytesIO(request.labels), index_col=0)
+            self.__trainService.train(model_class=request.modelClass, X=X, y=y, hyper_params=request.hyperParams)
         except Exception as e:
             error_response = model_trainer_pb2.GetPredictionResponse(error= errors_pb2.Error(code=500,message=str(e)))
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details(str(e))
             return error_response
         return model_trainer_pb2.TrainResponse(modelClass=request.modelClass)
-    
-    def ListAvailableModels(self, request, context):
-        isAuth = self.__authenticatorService.checkToken(token=request.token)
-        if isAuth == False: 
-            error_response = model_trainer_pb2.TrainResponse(error= errors_pb2.Error(code=401,message="Unauthorized"))
-            context.set_code(grpc.StatusCode.UNAUTHENTICATED)
-            context.set_details('Unauthorized')
-            return error_response
-        available_models = self.__trainService.available_model_classes()
-        return model_trainer_pb2.ListAvailableModelsResponse(modelClasses=available_models)
     
     def GetPrediction(self, request:model_trainer_pb2.GetPredictionRequest, context):
         df = pd.read_csv(io.BytesIO(request.fileData), index_col=0) 
@@ -63,6 +55,16 @@ class ModelTrainerServicer(model_trainer_pb2_grpc.ModelTrainerServicer):
             context.set_details(str(e))
             return error_response
         return model_trainer_pb2.GetPredictionResponse(prediction=prediction)
+    
+    def ListAvailableModels(self, request, context):
+        isAuth = self.__authenticatorService.checkToken(token=request.token)
+        if isAuth == False: 
+            error_response = model_trainer_pb2.TrainResponse(error= errors_pb2.Error(code=401,message="Unauthorized"))
+            context.set_code(grpc.StatusCode.UNAUTHENTICATED)
+            context.set_details('Unauthorized')
+            return error_response
+        available_models = self.__trainService.available_model_classes()
+        return model_trainer_pb2.ListAvailableModelsResponse(modelClasses=available_models)
     
 class HealthCheckServicer(healthcheck_pb2_grpc.HealthCheckServicer):
     def HealthCheck(self, request, context):

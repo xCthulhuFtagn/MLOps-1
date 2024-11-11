@@ -7,7 +7,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class TrainRequest(_message.Message):
-    __slots__ = ("modelClass", "hyperParams", "token")
+    __slots__ = ("modelClass", "hyperParams", "features", "labels", "token")
     class HyperParamsEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -17,11 +17,15 @@ class TrainRequest(_message.Message):
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     MODELCLASS_FIELD_NUMBER: _ClassVar[int]
     HYPERPARAMS_FIELD_NUMBER: _ClassVar[int]
+    FEATURES_FIELD_NUMBER: _ClassVar[int]
+    LABELS_FIELD_NUMBER: _ClassVar[int]
     TOKEN_FIELD_NUMBER: _ClassVar[int]
     modelClass: str
     hyperParams: _containers.ScalarMap[str, str]
+    features: bytes
+    labels: bytes
     token: str
-    def __init__(self, modelClass: _Optional[str] = ..., hyperParams: _Optional[_Mapping[str, str]] = ..., token: _Optional[str] = ...) -> None: ...
+    def __init__(self, modelClass: _Optional[str] = ..., hyperParams: _Optional[_Mapping[str, str]] = ..., features: _Optional[bytes] = ..., labels: _Optional[bytes] = ..., token: _Optional[str] = ...) -> None: ...
 
 class TrainResponse(_message.Message):
     __slots__ = ("modelClass", "error")

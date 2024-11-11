@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Header, Depends, Form
 from fastapi.security  import HTTPBearer,HTTPAuthorizationCredentials
-from typing import Dict
-from pydantic import BaseModel
+from typing import Dict, Union
+from pydantic import BaseModel, Json
 from pandas import DataFrame, Series
 
 
@@ -42,10 +42,9 @@ class LoginResponse(BaseModel):
 class RegisterResponse(BaseModel):
     token: str
 
-class TrainModelRequest(BaseModel):
-    model_class: str
-    hyper_params: Dict  = {}
-
+# class TrainModelRequest(BaseModel):
+#     model_class: str
+#     hyper_params: Dict  = {}
 
 @app.get("/healthcheck",status_code=200)
 async def healthcheck():
@@ -66,16 +65,35 @@ async def login(username:str, password: str):
     return LoginResponse(token = response)
 
 @app.post("/train_model")
-async def train_model(body: TrainModelRequest,token: HTTPAuthorizationCredentials = Depends(auth_scheme)):
+async def train_model(model_class: str = Form(), 
+                      hyper_params: Json = Form(), 
+                      features: UploadFile=File(), 
+                      labels: UploadFile=File(),
+    token: HTTPAuthorizationCredentials = Depends(auth_scheme)):
     if token is None:
         return {"error": "Invalid credentials"}
     
     is_token_valid = authentificator.checkToken(token.credentials)
     if is_token_valid is False:
         return {"error": "Invalid credentials"}
-    if model_trainer.status_model.get(body.model_class, "not initialized")  != "training":
+    if model_trainer.status_model.get(model_class, "not initialized")  != "training":
         print("model is starting to train" )
-        return JSONResponse(status_code=200, background=BackgroundTask(model_trainer.train, body.model_class, body.hyper_params), content={"model_status": "training"})
+
+        print(features)
+        print(labels)
+        features_df = pd.read_csv(features.file, index_col=0)
+        labels_df = pd.read_csv(labels.file, index_col=0)
+        return JSONResponse(
+            status_code=200, 
+            background=BackgroundTask(
+                model_trainer.train, 
+                model_class, 
+                features_df, 
+                labels_df, 
+                hyper_params
+            ), 
+            content={"model_status": "training"}
+            )
     else:  
         return PermissionError("Model is already training")
     
@@ -89,6 +107,7 @@ async def check_model(model_class: str,token: HTTPAuthorizationCredentials = Dep
         return {"error": "Invalid credentials"}
     
     response = model_trainer.status_model.get(model_class, f"No pretrained instance of {model_class}")
+    print('response',response)
     return response
 
 @app.get('/list_models')
@@ -105,7 +124,9 @@ async def list_models(token: HTTPAuthorizationCredentials = Depends(auth_scheme)
     return response
 
 @app.post("/predict")
-async def predict( model_class:str = Form(),file:UploadFile=File(),token: HTTPAuthorizationCredentials = Depends(auth_scheme)):
+async def predict(model_class:str = Form(), 
+                  file:UploadFile=File(),
+                  token: HTTPAuthorizationCredentials = Depends(auth_scheme)):
     if token is None:
         return {"error": "Invalid credentials"}
     

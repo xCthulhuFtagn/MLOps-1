@@ -9,14 +9,33 @@ import google.protobuf.empty_pb2;
 
 def run():
     with grpc.insecure_channel('localhost:50051') as channel:
-        stub = model_trainer_pb2_grpc.ModelTrainerStub(channel)
+        stub0 = authenticator_pb2_grpc.AuthenticatorStub(channel)
+        stub1 = model_trainer_pb2_grpc.ModelTrainerStub(channel)
         stub2 = healthcheck_pb2_grpc.HealthCheckStub(channel)
         # read file
-        in_file = open("classifier.csv", "rb") # opening for [r]eading as [b]inary
-        fileData = in_file.read()
-        in_file.close()
-        request = model_trainer_pb2.GetPredictionRequest(modelClass='GradientBoostingClassifier',fileData=fileData,token='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QiLCJwYXNzd29yZCI6InRlc3QifQ.qnVlS_xg5AbXAjlmt8KLAdzoBR8XTIA3zPdHDelM5SI')
-        response = stub.GetPrediction(request)
+        with open("classifier_features.csv", "rb") as features:# opening for [r]eading as [b]inary
+            featureData = features.read()
+        with open("classifier_labels.csv", "rb") as labels:
+            labelData = labels.read()
+        # request = authenticator_pb2.RegisterRequest(
+        #     username="max1777",
+        #     password="max"
+        # )
+        # response = stub0.Register(request)
+        # print(response)
+        request = authenticator_pb2.LoginRequest(
+            username="max1777",
+            password="max"
+        )
+        response = stub0.Login(request)
+        print(response.token)
+        request = model_trainer_pb2.TrainRequest(
+            modelClass='GradientBoostingClassifier',
+            features=featureData, 
+            labels=labelData,
+            token=response.token
+        )
+        response = stub1.Train(request)
     print(f"Result: {response}")
 
 if __name__ == '__main__':

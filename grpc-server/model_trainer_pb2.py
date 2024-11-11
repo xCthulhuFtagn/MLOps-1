@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 import errors_pb2 as errors__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13model_trainer.proto\x12\rmodel_trainer\x1a\x0c\x65rrors.proto\"\xb7\x01\n\x0cTrainRequest\x12\x12\n\nmodelClass\x18\x01 \x01(\t\x12\x41\n\x0bhyperParams\x18\x02 \x03(\x0b\x32,.model_trainer.TrainRequest.HyperParamsEntry\x12\x12\n\x05token\x18\x03 \x01(\tH\x00\x88\x01\x01\x1a\x32\n\x10HyperParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42\x08\n\x06_token\"P\n\rTrainResponse\x12\x12\n\nmodelClass\x18\x01 \x01(\t\x12!\n\x05\x65rror\x18\x02 \x01(\x0b\x32\r.errors.ErrorH\x00\x88\x01\x01\x42\x08\n\x06_error\":\n\x1aListAvailableModelsRequest\x12\x12\n\x05token\x18\x01 \x01(\tH\x00\x88\x01\x01\x42\x08\n\x06_token\"`\n\x1bListAvailableModelsResponse\x12\x14\n\x0cmodelClasses\x18\x01 \x03(\t\x12!\n\x05\x65rror\x18\x02 \x01(\x0b\x32\r.errors.ErrorH\x00\x88\x01\x01\x42\x08\n\x06_error\"Z\n\x14GetPredictionRequest\x12\x12\n\nmodelClass\x18\x01 \x01(\t\x12\x12\n\x05token\x18\x02 \x01(\tH\x00\x88\x01\x01\x12\x10\n\x08\x66ileData\x18\x03 \x01(\x0c\x42\x08\n\x06_token\"X\n\x15GetPredictionResponse\x12\x12\n\nprediction\x18\x01 \x03(\x02\x12!\n\x05\x65rror\x18\x02 \x01(\x0b\x32\r.errors.ErrorH\x00\x88\x01\x01\x42\x08\n\x06_error2\x9c\x02\n\x0cModelTrainer\x12\x42\n\x05Train\x12\x1b.model_trainer.TrainRequest\x1a\x1c.model_trainer.TrainResponse\x12l\n\x13ListAvailableModels\x12).model_trainer.ListAvailableModelsRequest\x1a*.model_trainer.ListAvailableModelsResponse\x12Z\n\rGetPrediction\x12#.model_trainer.GetPredictionRequest\x1a$.model_trainer.GetPredictionResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13model_trainer.proto\x12\rmodel_trainer\x1a\x0c\x65rrors.proto\"\xca\x01\n\x0cTrainRequest\x12\x12\n\nmodelClass\x18\x01 \x01(\t\x12\x41\n\x0bhyperParams\x18\x02 \x03(\x0b\x32,.model_trainer.TrainRequest.HyperParamsEntry\x12\x10\n\x08\x66\x65\x61tures\x18\x03 \x01(\x0c\x12\x0e\n\x06labels\x18\x04 \x01(\x0c\x12\r\n\x05token\x18\x05 \x01(\t\x1a\x32\n\x10HyperParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"P\n\rTrainResponse\x12\x12\n\nmodelClass\x18\x01 \x01(\t\x12!\n\x05\x65rror\x18\x02 \x01(\x0b\x32\r.errors.ErrorH\x00\x88\x01\x01\x42\x08\n\x06_error\":\n\x1aListAvailableModelsRequest\x12\x12\n\x05token\x18\x01 \x01(\tH\x00\x88\x01\x01\x42\x08\n\x06_token\"`\n\x1bListAvailableModelsResponse\x12\x14\n\x0cmodelClasses\x18\x01 \x03(\t\x12!\n\x05\x65rror\x18\x02 \x01(\x0b\x32\r.errors.ErrorH\x00\x88\x01\x01\x42\x08\n\x06_error\"Z\n\x14GetPredictionRequest\x12\x12\n\nmodelClass\x18\x01 \x01(\t\x12\x12\n\x05token\x18\x02 \x01(\tH\x00\x88\x01\x01\x12\x10\n\x08\x66ileData\x18\x03 \x01(\x0c\x42\x08\n\x06_token\"X\n\x15GetPredictionResponse\x12\x12\n\nprediction\x18\x01 \x03(\x02\x12!\n\x05\x65rror\x18\x02 \x01(\x0b\x32\r.errors.ErrorH\x00\x88\x01\x01\x42\x08\n\x06_error2\x9c\x02\n\x0cModelTrainer\x12\x42\n\x05Train\x12\x1b.model_trainer.TrainRequest\x1a\x1c.model_trainer.TrainResponse\x12l\n\x13ListAvailableModels\x12).model_trainer.ListAvailableModelsRequest\x1a*.model_trainer.ListAvailableModelsResponse\x12Z\n\rGetPrediction\x12#.model_trainer.GetPredictionRequest\x1a$.model_trainer.GetPredictionResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,19 +35,19 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_TRAINREQUEST_HYPERPARAMSENTRY']._loaded_options = None
   _globals['_TRAINREQUEST_HYPERPARAMSENTRY']._serialized_options = b'8\001'
   _globals['_TRAINREQUEST']._serialized_start=53
-  _globals['_TRAINREQUEST']._serialized_end=236
-  _globals['_TRAINREQUEST_HYPERPARAMSENTRY']._serialized_start=176
-  _globals['_TRAINREQUEST_HYPERPARAMSENTRY']._serialized_end=226
-  _globals['_TRAINRESPONSE']._serialized_start=238
-  _globals['_TRAINRESPONSE']._serialized_end=318
-  _globals['_LISTAVAILABLEMODELSREQUEST']._serialized_start=320
-  _globals['_LISTAVAILABLEMODELSREQUEST']._serialized_end=378
-  _globals['_LISTAVAILABLEMODELSRESPONSE']._serialized_start=380
-  _globals['_LISTAVAILABLEMODELSRESPONSE']._serialized_end=476
-  _globals['_GETPREDICTIONREQUEST']._serialized_start=478
-  _globals['_GETPREDICTIONREQUEST']._serialized_end=568
-  _globals['_GETPREDICTIONRESPONSE']._serialized_start=570
-  _globals['_GETPREDICTIONRESPONSE']._serialized_end=658
-  _globals['_MODELTRAINER']._serialized_start=661
-  _globals['_MODELTRAINER']._serialized_end=945
+  _globals['_TRAINREQUEST']._serialized_end=255
+  _globals['_TRAINREQUEST_HYPERPARAMSENTRY']._serialized_start=205
+  _globals['_TRAINREQUEST_HYPERPARAMSENTRY']._serialized_end=255
+  _globals['_TRAINRESPONSE']._serialized_start=257
+  _globals['_TRAINRESPONSE']._serialized_end=337
+  _globals['_LISTAVAILABLEMODELSREQUEST']._serialized_start=339
+  _globals['_LISTAVAILABLEMODELSREQUEST']._serialized_end=397
+  _globals['_LISTAVAILABLEMODELSRESPONSE']._serialized_start=399
+  _globals['_LISTAVAILABLEMODELSRESPONSE']._serialized_end=495
+  _globals['_GETPREDICTIONREQUEST']._serialized_start=497
+  _globals['_GETPREDICTIONREQUEST']._serialized_end=587
+  _globals['_GETPREDICTIONRESPONSE']._serialized_start=589
+  _globals['_GETPREDICTIONRESPONSE']._serialized_end=677
+  _globals['_MODELTRAINER']._serialized_start=680
+  _globals['_MODELTRAINER']._serialized_end=964
 # @@protoc_insertion_point(module_scope)

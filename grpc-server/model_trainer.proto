@@ -11,9 +11,11 @@ service ModelTrainer {
 }
 
 message TrainRequest {
-  string modelClass = 1;
-  map<string, string> hyperParams = 2;
-  optional string token = 3;
+    string modelClass = 1;
+    map<string, string> hyperParams = 2;
+    bytes features = 3;  // First file
+    bytes labels = 4;    // Second file
+    string token = 5;
 }
 
 message TrainResponse {
