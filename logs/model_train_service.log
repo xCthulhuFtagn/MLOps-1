@@ -1,0 +1,8 @@
+2024-11-12 03:04:48,218 - INFO - model_trainer_logger - Initializing ModelTrainService
+2024-11-12 03:04:48,219 - INFO - model_trainer_logger - Loaded classification dataset
+2024-11-12 03:04:48,224 - INFO - model_trainer_logger - Loaded regression dataset
+2024-11-12 03:04:48,224 - INFO - model_trainer_logger - Model statuses set: {'GradientBoostingClassifier': 'ready', 'GradientBoostingRegressor': 'ready'}
+2024-11-12 03:05:09,948 - INFO - model_trainer_logger - Prediction request received for model class: GradientBoostingClassifier
+2024-11-12 03:05:09,948 - INFO - model_trainer_logger - Loading model GradientBoostingClassifier for prediction
+2024-11-12 03:05:09,953 - INFO - model_trainer_logger - Model GradientBoostingClassifier loaded successfully
+2024-11-12 03:05:09,955 - INFO - model_trainer_logger - Prediction completed for model class: GradientBoostingClassifier

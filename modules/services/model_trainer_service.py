@@ -1,8 +1,9 @@
 from typing import Dict
-
 from sklearn.datasets import load_iris, fetch_california_housing
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
+from ..utils.path_manager import makeRelPath
+from ..utils.logger import makeLogger
 import pickle
 import pandas as pd
 import logging
@@ -10,18 +11,9 @@ import os
 from concurrent import futures
 import threading
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-    handlers=[
-        logging.FileHandler("model_train_service.log"),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+logger = makeLogger('model_trainer_logger', makeRelPath(os.getcwd(), "logs") + "model_train_service.log")
 
-model_dir_path = "/home/owner/Documents/DEV/MLOps/HW1/models"
+model_dir_path = makeRelPath(os.getcwd(), "models")
 regressor_dir_path = f'{model_dir_path}'
 classifier_dir_path = f'{model_dir_path}'
 

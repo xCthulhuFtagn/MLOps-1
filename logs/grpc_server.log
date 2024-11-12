@@ -1,0 +1,8 @@
+2024-11-11 23:39:46,709 - INFO - grpc_server_logger - Server is running on port 50051
+2024-11-11 23:39:46,709 - INFO - grpc_server_logger - Starting gRPC server on port 50051
+2024-11-11 23:39:46,712 - INFO - grpc_server_logger - AuthenticatorServicer initialized
+2024-11-11 23:39:46,719 - INFO - grpc_server_logger - ModelTrainerServicer initialized
+2024-11-11 23:39:58,765 - INFO - grpc_server_logger - Prediction request received for model class: GradientBoostingClassifier
+2024-11-11 23:39:58,766 - INFO - grpc_server_logger - Input data read successfully for model class: GradientBoostingClassifier
+2024-11-11 23:39:58,767 - INFO - grpc_server_logger - Performing prediction for model class: GradientBoostingClassifier
+2024-11-11 23:39:58,774 - INFO - grpc_server_logger - Prediction completed successfully for model class: GradientBoostingClassifier

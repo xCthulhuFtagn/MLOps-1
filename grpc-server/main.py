@@ -9,22 +9,15 @@ import errors_pb2_grpc
 import healthcheck_pb2
 import healthcheck_pb2_grpc
 import io
+import os
 import pandas as pd
 import logging
-
 from modules.services.auth_service import AuthService
 from modules.services.model_trainer_service import ModelTrainService
+from modules.utils.path_manager import makeRelPath
+from modules.utils.logger import makeLogger
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-    handlers=[
-        logging.FileHandler("grpc_server.log"),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+logger = makeLogger('grpc_server_logger', makeRelPath(os.getcwd(), "logs") + "grpc_server.log")
 
 class ModelTrainerServicer(model_trainer_pb2_grpc.ModelTrainerServicer):
     """Service for training and managing machine learning models."""

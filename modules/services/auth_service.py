@@ -1,19 +1,11 @@
 import os
 import jwt
 import logging
-
 from ..utils.dict_to_file import write_dict_to_file, read_dict_from_file
+from ..utils.path_manager import makeRelPath
+from ..utils.logger import makeLogger
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-    handlers=[
-        logging.FileHandler("auth_service.log"),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+logger = makeLogger('auth_logger', makeRelPath(os.getcwd(), "logs") + "auth_service.log")
 
 class AuthService():
     __secret: str = 'JWT_SECRET'
@@ -54,7 +46,7 @@ class AuthService():
             logger.info("Token is valid")
             return True
         except jwt.DecodeError:
-            logger.warning("Failed to decode token")
+            logger.error("Failed to decode token")
             logger.debug(f"Token content: {token}")
             return False
 
@@ -73,7 +65,7 @@ class AuthService():
         users = read_dict_from_file(self.__users_file)
         actualPassword = users.get(username, None)
         if actualPassword is None or password != actualPassword:
-            logger.warning(f"Login failed for user: {username}")
+            logger.error(f"Login failed for user: {username}")
             return None
         token = self.generateToken(username, password)
         logger.info(f"Login successful for user: {username}")

@@ -1,0 +1,3 @@
+2024-11-12 03:05:09,945 - INFO - rest_server_logger - Prediction request received for model class: GradientBoostingClassifier
+2024-11-12 03:05:09,948 - INFO - rest_server_logger - CSV file read successfully for prediction
+2024-11-12 03:05:09,955 - INFO - rest_server_logger - Prediction completed for model class: GradientBoostingClassifier

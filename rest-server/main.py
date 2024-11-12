@@ -1,31 +1,21 @@
+import os
+import logging
 from fastapi import FastAPI, File, UploadFile, HTTPException, Header, Depends, Form
 from fastapi.security  import HTTPBearer,HTTPAuthorizationCredentials
 from typing import Dict
 from pydantic import BaseModel
 from pandas import DataFrame, Series
-
-
 from modules.services.auth_service import AuthService
 from modules.services.model_trainer_service import ModelTrainService
-
+from modules.utils.path_manager import makeRelPath
+from modules.utils.logger import makeLogger
 import pandas as pd
-
 from starlette.background import BackgroundTask
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
-
 from typing import Annotated
 
-# Настройка логгирования
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-    handlers=[
-        logging.FileHandler("rest_server.log"),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+logger = makeLogger('rest_server_logger', makeRelPath(os.getcwd(), "logs") + "rest_server.log")
 
 auth_scheme = HTTPBearer()
 authentificator = AuthService()
@@ -237,6 +227,8 @@ async def predict(model_class: str = Form(), file: UploadFile = File(), token: H
         raise TypeError("Wrong file format, only working with .csv")
 
     try:
+        print(file.file)
+        print(file)
         df = pd.read_csv(file.file, index_col=0)
         logger.info("CSV file read successfully for prediction")
         response = pd.DataFrame(model_trainer.predict(model_class, df)).astype(float)
