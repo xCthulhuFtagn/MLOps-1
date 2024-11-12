@@ -10,7 +10,7 @@ This repository contains an MLOps project that implements a machine learning mod
    - **REST**: Provides RESTful APIs for similar functionalities for broader compatibility.
 
 2. **Dashboard**
-   - Interactive dashboard (using `Streamlit` or `Gradio`) for monitoring and interacting with the model service, allowing users to visualize the model’s performance and control its training and prediction.
+   - Interactive dashboard (using `Streamlit`) for monitoring and interacting with the model service, allowing users to visualize the model’s performance and control its training and prediction.
 
 3. **Logging and Monitoring**
    - Comprehensive logging tracks all key actions, errors, and system status, ensuring traceability and aiding in debugging.
@@ -51,28 +51,22 @@ MLOps-Project/
 
 2. **Install dependencies**:
    ```bash
-   pip install -r requirements.txt
+   poetry install
    ```
 
-3. **Generate gRPC Code (if necessary)**:
-   Run the following command to generate gRPC stubs if there are any updates to `.proto` files:
-   ```bash
-   ./generate-proto.sh
-   ```
-
-4. **Configure Environment**:
-   - Ensure the paths for storing models and log files are correctly set in the configuration files or directly in code (e.g., `model_dir_path` in `model_train_service.py`).
+3. **Configure Environment**:
+   - Ensure the paths for storing models and log files are correctly set in the configuration files or directly in code (e.g., `model_dir_path` in `model_train_service.py`).  Your project must be located under `/MLOps-1` folder!
 
 ## Running the Servers
 ### Start the gRPC Server
 ```bash
-python grpc-server/main.py
+bash run-grpc.sh
 ```
 This will start the gRPC server on the default port (e.g., `50051`).
 
 ### Start the REST Server
 ```bash
-python rest-server/main.py
+bash run-rest.sh
 ```
 This will start the REST server, making it accessible for HTTP requests.
 
@@ -82,19 +76,26 @@ The gRPC API allows for high-performance interactions:
 - **Train Model**: Train a machine learning model with customizable hyperparameters.
 - **Predict**: Obtain predictions from a trained model.
 - **Health Check**: Get the status of the server.
+- **Check Model**: Check the specified model status.
+- **Login**: Log into the server.
+- **Register**: Register on the server.
 
 ### REST API
 The REST API provides similar functionalities for broader compatibility. Access endpoints like:
 - **POST /train_model**: Trains a specified model.
 - **POST /predict**: Returns predictions for provided data.
 - **GET /healthcheck**: Returns the server status.
+- **GET /check_model**: Returns the specified model status (models names are `GradientBoostingRegressor` and `GradientBoostingClassifier`).
+- **POST /login**: Log into the server.
+- **POST /register**: Register on the server.
 
 For more details, refer to the `Swagger` documentation.
 
 ## Dashboard
-An interactive dashboard can be launched to monitor and manage model status and performance using `Streamlit` or `Gradio`:
+An interactive dashboard can be launched to monitor and manage model status and performance using `Streamlit`:
 ```bash
-python dashboard.py
+bash run-rest.sh
+streamlit run dashboard.py
 ```
 
 ## Logging
@@ -108,9 +109,3 @@ Detailed logging is available for all core modules:
 
 ## Testing
 To test the gRPC and REST APIs, sample client scripts are provided. Ensure the servers are running, then execute the client scripts to verify the functionality of each endpoint.
-
-## License
-This project is licensed under the MIT License.
-
-## Contact
-For questions or support, please reach out to [your-email@example.com].
