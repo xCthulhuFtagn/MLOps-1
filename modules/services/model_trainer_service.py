@@ -1,15 +1,14 @@
 
 from typing import Dict
 
-from sklearn.datasets import load_iris, fetch_california_housing
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
+
 import pickle
 import pandas as pd
-
 import os
-from concurrent import futures
-import threading
+
+from data_version_tracker_service import DataVersionTrackerService
+
 
 model_dir_path = "/home/owner/Documents/DEV/MLOps/HW1/models"
 regressor_dir_path = f'{model_dir_path}'
@@ -22,21 +21,43 @@ class ModelTrainService():
             model_name = model.split(".")[0]
             self.status_model[model_name] = "ready"
 
-    def train(self, model_class: str, X:pd.DataFrame, y:pd.DataFrame, hyper_params: Dict) -> str:
-        if model_class not in self.available_model_classes(): return
+    def train(self, model_class: str, bucket: str, hyper_params: Dict, data_version_tracker_service: DataVersionTrackerService) -> str:
+        if model_class not in self.available_model_classes():
+            return
         try:
+            # Download files from Minio using DataVersionTrackerService
+            features_tmp_path = f"/tmp/features"
+            labels_tmp_path = f"/tmp/labels"
+            data_version_tracker_service.download_file(bucket, "features", features_tmp_path)
+            data_version_tracker_service.download_file(bucket, "labels", labels_tmp_path)
+
+            # Load datasets into DataFrames
+            features_df = pd.read_csv(features_tmp_path, index_col=0)
+            labels_df = pd.read_csv(labels_tmp_path, index_col=0)
+
+            # Train the model
             match model_class:
                 case "GradientBoostingClassifier":
-                    model = GradientBoostingClassifier(*hyper_params)
-                    model.fit(X, y)
-                case "GradientBoostingRegressor": 
-                    model = GradientBoostingRegressor(*hyper_params)
-                    model.fit(X, y)
+                    model = GradientBoostingClassifier(**hyper_params)
+                    model.fit(features_df, labels_df)
+                case "GradientBoostingRegressor":
+                    model = GradientBoostingRegressor(**hyper_params)
+                    model.fit(features_df, labels_df)
+
+            # Save the model
             with open(f'{regressor_dir_path}/{model_class}.pkl', 'wb') as f:
-                pickle.dump(model,f)
-            self.status_model[model_class] = "ready" 
+                pickle.dump(model, f)
+            self.status_model[model_class] = "ready"
         except Exception as e:
-            self.status_model[model_class] = e
+            self.status_model[model_class] = str(e)
+
+        # Clean up the temporary files
+        if os.path.exists(features_tmp_path):
+            os.remove(features_tmp_path)
+        if os.path.exists(labels_tmp_path):
+            os.remove(labels_tmp_path)
+
+
 
     def predict(self, model_class: str, inference_data: pd.DataFrame):
         match model_class:

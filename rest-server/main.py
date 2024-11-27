@@ -1,34 +1,28 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Header, Depends, Form
-from fastapi.security  import HTTPBearer,HTTPAuthorizationCredentials
-from typing import Dict, Union
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Form
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Dict
 from pydantic import BaseModel, Json
-from pandas import DataFrame, Series
-
+from pandas import DataFrame
 
 from modules.services.auth_service import AuthService
 from modules.services.model_trainer_service import ModelTrainService
+from modules.services.data_version_tracker_service import DataVersionTrackerService
 
 import pandas as pd
-
 from starlette.background import BackgroundTask
 from fastapi.responses import JSONResponse
-from contextlib import asynccontextmanager
-
-from typing import Annotated
 
 auth_scheme = HTTPBearer()
 
-# TODO:
-# Add tokens to REST
-# Handle exceptions in train
-# Clean up grpc
-# Write README
-# Clean shell scripts
-# Add pythonDocs for functions
-# Get analytics:
-#  Интерактивный дашборд streamlit/gradio/etc. (можно отдельным сервисом, просто его запуск должен быть прописан в инструкции)
 authentificator = AuthService()
 model_trainer = ModelTrainService()
+data_version_tracker_service = DataVersionTrackerService(
+    repo_path=".",
+    endpoint_url='http://localhost:9000',
+    access_key='your_access_key',
+    secret_key='your_secret_key'
+)
+data_version_tracker_service.init_dvc()
 
 app = FastAPI()
 
@@ -65,38 +59,42 @@ async def login(username:str, password: str):
     return LoginResponse(token = response)
 
 @app.post("/train_model")
-async def train_model(model_class: str = Form(), 
-                      hyper_params: Json = Form(), 
-                      features: UploadFile=File(), 
-                      labels: UploadFile=File(),
-    token: HTTPAuthorizationCredentials = Depends(auth_scheme)):
+async def train_model(model_class: str = Form(),
+                      hyper_params: Json = Form(),
+                      features: UploadFile = File(),
+                      labels: UploadFile = File(),
+                      token: HTTPAuthorizationCredentials = Depends(auth_scheme)):
     if token is None:
         return {"error": "Invalid credentials"}
-    
+
     is_token_valid = authentificator.checkToken(token.credentials)
     if is_token_valid is False:
         return {"error": "Invalid credentials"}
-    if model_trainer.status_model.get(model_class, "not initialized")  != "training":
-        print("model is starting to train" )
 
-        print(features)
-        print(labels)
-        features_df = pd.read_csv(features.file, index_col=0)
-        labels_df = pd.read_csv(labels.file, index_col=0)
+    if model_trainer.status_model.get(model_class, "not initialized") != "training":
+        print("model is starting to train")
+
+        # Define the bucket name dynamically
+        bucket_name = f"s3://{model_class}"
+
+        # Add datasets to DVC
+        data_version_tracker_service.add_dataset(features.file, bucket_name, "features")
+        data_version_tracker_service.add_dataset(labels.file, bucket_name, "labels")
+
         return JSONResponse(
-            status_code=200, 
+            status_code=200,
             background=BackgroundTask(
-                model_trainer.train, 
-                model_class, 
-                features_df, 
-                labels_df, 
-                hyper_params
-            ), 
+                model_trainer.train,
+                model_class,
+                bucket_name,
+                hyper_params,
+                data_version_tracker_service
+            ),
             content={"model_status": "training"}
-            )
-    else:  
+        )
+    else:
         return PermissionError("Model is already training")
-    
+            
 @app.get("/check_model")
 async def check_model(model_class: str,token: HTTPAuthorizationCredentials = Depends(auth_scheme)):
     if token is None:
