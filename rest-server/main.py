@@ -5,6 +5,7 @@ from pydantic import BaseModel, Json
 from pandas import DataFrame
 import os
 
+
 from modules.services.auth_service import AuthService
 from modules.services.model_trainer_service import ModelTrainService
 from modules.services.data_version_tracker_service import DataVersionTrackerService
@@ -18,10 +19,10 @@ auth_scheme = HTTPBearer()
 authentificator = AuthService()
 model_trainer = ModelTrainService()
 data_version_tracker_service = DataVersionTrackerService(
-    repo_path=".",
+    repo_path="/home/owner/Documents/DEV/MLOps/HW1/.git",
     endpoint_url='http://localhost:9000',
-    access_key='your_access_key',
-    secret_key='your_secret_key'
+    access_key='USERNAME',
+    secret_key='PASSWORD'
 )
 
 app = FastAPI()
@@ -36,9 +37,6 @@ class LoginResponse(BaseModel):
 class RegisterResponse(BaseModel):
     token: str
 
-# class TrainModelRequest(BaseModel):
-#     model_class: str
-#     hyper_params: Dict  = {}
 
 @app.get("/healthcheck",status_code=200)
 async def healthcheck():
@@ -75,9 +73,8 @@ async def train_model(model_class: str = Form(),
         print("model is starting to train")
 
         # Define the bucket name dynamically
-        bucket_name = f"s3://{model_class.lower()}"
+        bucket_name = model_class.lower().replace(" ", "-")
 
-        # Add datasets to DVC
         data_version_tracker_service.add_dataset(features.file, bucket_name, "features")
         data_version_tracker_service.add_dataset(labels.file, bucket_name, "labels")
 
