@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Dict
 from pydantic import BaseModel, Json
 from pandas import DataFrame
+import os
 
 from modules.services.auth_service import AuthService
 from modules.services.model_trainer_service import ModelTrainService
@@ -22,7 +23,6 @@ data_version_tracker_service = DataVersionTrackerService(
     access_key='your_access_key',
     secret_key='your_secret_key'
 )
-data_version_tracker_service.init_dvc()
 
 app = FastAPI()
 
@@ -75,7 +75,7 @@ async def train_model(model_class: str = Form(),
         print("model is starting to train")
 
         # Define the bucket name dynamically
-        bucket_name = f"s3://{model_class}"
+        bucket_name = f"s3://{model_class.lower()}"
 
         # Add datasets to DVC
         data_version_tracker_service.add_dataset(features.file, bucket_name, "features")

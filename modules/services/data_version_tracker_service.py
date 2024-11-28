@@ -8,6 +8,11 @@ from botocore.client import Config
 class DataVersionTrackerService:
     def __init__(self, repo_path, endpoint_url, access_key, secret_key):
         self.repo_path = repo_path
+
+        # Check if the repository is already initialized
+        if not os.path.exists(os.path.join(self.repo_path, '.dvc')):
+            self._init_dvc()
+
         self.repo = dvc.repo.Repo(repo_path)
         self.s3_client = boto3.client(
             's3',
@@ -17,12 +22,12 @@ class DataVersionTrackerService:
             config=Config(signature_version='s3v4')
         )
 
-    def init_dvc(self):
-        subprocess.run(["dvc", "init"], cwd=self.repo_path, check=True)
+    def _init_dvc(self):
+        subprocess.run(["dvc", "init", "--subdir"], cwd=self.repo_path, check=True)
 
     def add_remote(self, bucket: str):
-        remote_name = bucket.replace("s3://", "")
-        subprocess.run(["dvc", "remote", "add", "-d", remote_name, bucket], cwd=self.repo_path, check=True)
+        remote = bucket.replace("s3://", "")
+        subprocess.run(["dvc", "remote", "add", "-d", bucket, remote], cwd=self.repo_path, check=True)
 
 
     def download_file(self, bucket, object_name, temp_path):
@@ -30,7 +35,7 @@ class DataVersionTrackerService:
 
     def add_dataset(self, file_obj, bucket: str, object_name: str):
         # Create a temporary directory
-        temp_dir = "/tmp/dvc_temp"
+        temp_dir = "./tmp/dvc_temp"
         os.makedirs(temp_dir, exist_ok=True)
 
         # Define the temporary file path
@@ -57,12 +62,3 @@ class DataVersionTrackerService:
 
     def pull_dataset(self, object_name: str):
         self.repo.pull(object_name)
-
-# Initialize the DataVersionTrackerService
-data_version_tracker_service = DataVersionTrackerService(
-    repo_path=".",
-    endpoint_url='http://localhost:9000',
-    access_key='your_access_key',
-    secret_key='your_secret_key'
-)
-data_version_tracker_service.init_dvc()

@@ -7,7 +7,7 @@ import pickle
 import pandas as pd
 import os
 
-from data_version_tracker_service import DataVersionTrackerService
+from .data_version_tracker_service import DataVersionTrackerService
 
 
 model_dir_path = "/home/owner/Documents/DEV/MLOps/HW1/models"
