@@ -26,10 +26,10 @@ class ModelTrainService():
             return
         try:
             # Download files from Minio using DataVersionTrackerService
-            features_tmp_path = f"/tmp/features"
-            labels_tmp_path = f"/tmp/labels"
-            data_version_tracker_service.download_file(bucket, "features", features_tmp_path)
-            data_version_tracker_service.download_file(bucket, "labels", labels_tmp_path)
+            features_tmp_path = f"/tmp/features.csv"
+            labels_tmp_path = f"/tmp/labels.csv"
+            data_version_tracker_service.get_dataset(bucket, features_tmp_path)
+            data_version_tracker_service.get_dataset(bucket, labels_tmp_path)
 
             # Load datasets into DataFrames
             features_df = pd.read_csv(features_tmp_path, index_col=0)

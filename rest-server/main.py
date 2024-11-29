@@ -20,10 +20,11 @@ authentificator = AuthService()
 model_trainer = ModelTrainService()
 data_version_tracker_service = DataVersionTrackerService(
     repo_path="/home/owner/Documents/DEV/MLOps/HW1/.git",
-    endpoint_url='http://localhost:9000',
+    endpoint_url='http://localhost:900',
     access_key='USERNAME',
     secret_key='PASSWORD'
 )
+
 
 app = FastAPI()
 
@@ -75,8 +76,8 @@ async def train_model(model_class: str = Form(),
         # Define the bucket name dynamically
         bucket_name = model_class.lower().replace(" ", "-")
 
-        data_version_tracker_service.add_dataset(features.file, bucket_name, "features")
-        data_version_tracker_service.add_dataset(labels.file, bucket_name, "labels")
+        data_version_tracker_service.add_dataset(features.file, bucket_name, "features.csv")
+        data_version_tracker_service.add_dataset(labels.file, bucket_name, "labels.csv")
 
         return JSONResponse(
             status_code=200,
@@ -135,5 +136,4 @@ async def predict(model_class:str = Form(),
     df = pd.read_csv(file.file, index_col=0) 
 
     response = DataFrame(model_trainer.predict(model_class, df)).astype(float)
-
     return response
