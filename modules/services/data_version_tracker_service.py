@@ -10,13 +10,7 @@ import pandas as pd
 from typing import List
 from pathlib import Path
 
-def run_script(script_path: str, script_args: List):
-    print(f"running {script_path}")
-    os.chmod(script_path, 0o755)
-    subprocess.run(
-        [script_path] + script_args,
-        check=True
-    )
+
 
 class DataVersionTrackerService:
     def __init__(self, repo_path, endpoint_url, access_key, secret_key):
@@ -36,6 +30,15 @@ class DataVersionTrackerService:
             aws_access_key_id=self.access_key,
             aws_secret_access_key=self.secret_key,
             config=Config(signature_version='s3v4')
+        )
+
+    def run_script(self, script_path: str, script_args: List):
+        print(f"running {script_path}")
+        os.chmod(script_path, 0o755)
+        subprocess.run(
+            [script_path] + script_args,
+            check=True,
+            cwd= os.path.join(self.repo_dir, "rest-server")
         )
 
     def _init_dvc(self):
