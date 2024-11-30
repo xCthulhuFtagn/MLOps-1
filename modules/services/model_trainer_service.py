@@ -26,29 +26,30 @@ class ModelTrainService():
             return
         try:
             # Download files from Minio using DataVersionTrackerService
-            features_tmp_path = f"rest-server/datasets/features.csv"
-            labels_tmp_path = f"rest-server/datasets/labels.csv"
-            # data_version_tracker_service.get_dataset(bucket, features_tmp_path)
-            # data_version_tracker_service.get_dataset(bucket, labels_tmp_path)
+            print(os.getcwd())
+            features_tmp_path = f"datasets/features.csv"
+            labels_tmp_path = f"datasets/labels.csv"
+            # data_version_tracker_service.get_dataset(bucket)
 
             # Load datasets into DataFrames
             features_df = pd.read_csv(features_tmp_path, index_col=0)
-            labels_df = pd.read_csv(labels_tmp_path, index_col=0)
+            targets_df = pd.read_csv(labels_tmp_path, index_col=0).values.ravel()
 
             # Train the model
             match model_class:
                 case "GradientBoostingClassifier":
                     model = GradientBoostingClassifier(**hyper_params)
-                    model.fit(features_df, labels_df)
+                    model.fit(features_df, targets_df)
                 case "GradientBoostingRegressor":
                     model = GradientBoostingRegressor(**hyper_params)
-                    model.fit(features_df, labels_df)
+                    model.fit(features_df, targets_df)
 
             # Save the model
             with open(f'{regressor_dir_path}/{model_class}.pkl', 'wb') as f:
                 pickle.dump(model, f)
             self.status_model[model_class] = "ready"
         except Exception as e:
+            print(e)
             self.status_model[model_class] = str(e)
 
         # Clean up the temporary files

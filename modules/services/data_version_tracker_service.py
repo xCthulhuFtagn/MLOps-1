@@ -49,7 +49,7 @@ class DataVersionTrackerService:
 
     def try_add_remote(self, bucket: str):
         script_path = os.path.join(self.repo_dir, "bash_scripts/add_remote.sh")
-        run_script(script_path, [self.repo_path, bucket, self.endpoint_url, self.access_key, self.secret_key])
+        self.run_script(script_path, [self.repo_path, bucket, self.endpoint_url, self.access_key, self.secret_key])
 
     def add_dataset(self, file_obj, bucket: str, object_name: str):
         # Create a temporary directory within the DVC repository
@@ -63,7 +63,7 @@ class DataVersionTrackerService:
         file_data = BytesIO(file_obj.read())
         df = pd.read_csv(file_data)
         print("adding dataset")
-        df.to_csv(temp_path)
+        df.to_csv(temp_path, index=False)
 
         if  not self.bucket_exists(bucket):
             self.create_bucket(bucket)
@@ -72,7 +72,7 @@ class DataVersionTrackerService:
 
         # Add the dataset to DVC
         script_path = os.path.join(self.repo_dir, "bash_scripts/track_datasets.sh")
-        run_script(script_path, [bucket, temp_path])
+        self.run_script(script_path, [bucket, temp_path])
 
         # print("file added, deleting file")
         # dir_path = Path(os.path.join(self.repo_dir, "rest-server/datasets"))
@@ -93,10 +93,11 @@ class DataVersionTrackerService:
             print("No bucket")
             return False
 
-    def get_dataset(self, bucket: str, file: str):
-        print("getting dataset")
-        remote = "s3://" + bucket
-        subprocess.run(
-            ['dvc', 'get', '-r', remote, file],
-            check=True
-        )
+    # def get_dataset(self, bucket: str):
+    #     print("getting dataset")
+    #     # remote = "s3://" + bucket
+    #     subprocess.run(
+    #         ['dvc', 'pull', '-r', bucket, '--to datasets'],
+    #         check=True,
+    #         cwd = os.path.join(self.repo_dir, "rest-server")
+    #     )
