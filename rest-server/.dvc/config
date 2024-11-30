@@ -1,0 +1,4 @@
+[core]
+    autostage = true
+['remote "s3-data-storage"']
+    url = s3://test-dvc-dir/
