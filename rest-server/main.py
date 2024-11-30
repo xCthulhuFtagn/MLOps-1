@@ -25,9 +25,7 @@ data_version_tracker_service = DataVersionTrackerService(
     secret_key='PASSWORD'
 )
 
-
 app = FastAPI()
-
 
 class HealthCheckResponse(BaseModel):
     status: str
@@ -37,7 +35,6 @@ class LoginResponse(BaseModel):
 
 class RegisterResponse(BaseModel):
     token: str
-
 
 @app.get("/healthcheck",status_code=200)
 async def healthcheck():
