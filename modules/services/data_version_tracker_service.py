@@ -45,13 +45,12 @@ class DataVersionTrackerService:
         subprocess.run([script_path], cwd=self.repo_dir, check=True)
 
     def try_add_remote(self, bucket: str):
-        remote = os.path.join("localhost:9000//", bucket)
         script_path = os.path.join(self.repo_dir, "bash_scripts/add_remote.sh")
-        run_script(script_path, [self.repo_path, bucket, remote, self.endpoint_url, self.access_key, self.secret_key])
+        run_script(script_path, [self.repo_path, bucket, self.endpoint_url, self.access_key, self.secret_key])
 
     def add_dataset(self, file_obj, bucket: str, object_name: str):
         # Create a temporary directory within the DVC repository
-        datasets_dir = os.path.join(self.repo_dir, "datasets")
+        datasets_dir = os.path.join(self.repo_dir, "rest-server/datasets")
 
         # Define the temporary file path
         temp_path = os.path.join(datasets_dir, object_name)
@@ -70,11 +69,10 @@ class DataVersionTrackerService:
 
         # Add the dataset to DVC
         script_path = os.path.join(self.repo_dir, "bash_scripts/track_datasets.sh")
-        remote = "localhost:9000//" + bucket
-        run_script(script_path, [remote, temp_path])
+        run_script(script_path, [bucket, temp_path])
 
         print("file added, deleting file")
-        dir_path = Path(os.path.join(self.repo_dir, "datasets"))
+        dir_path = Path(os.path.join(self.repo_dir, "rest-server/datasets"))
         for item in dir_path.iterdir():
             if item.is_file():
                 item.unlink()
@@ -94,7 +92,7 @@ class DataVersionTrackerService:
 
     def get_dataset(self, bucket: str, file: str):
         print("getting dataset")
-        remote = "localhost:9000//" + bucket
+        remote = "s3://" + bucket
         subprocess.run(
             ['dvc', 'get', '-r', remote, file],
             check=True

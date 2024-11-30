@@ -2,13 +2,24 @@
 
 # Check if the correct number of arguments is provided
 if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <remote> <file>"
+    echo "Usage: $0 <remote> <dataset_path>"
     exit 1
 fi
 
+# Assign arguments to variables
 remote=$1
-file=$2
+dataset_path=$2
 
-# Run the dvc commands
-dvc add $file
-dvc push -r $remoteecho 
+# Ensure the dataset path is within the DVC project
+if [[ ! "$dataset_path" =~ ^/home/owner/Documents/DEV/MLOps/HW1/ ]]; then
+    echo "Dataset path must be within the DVC project directory."
+    exit 1
+fi
+
+# Add the dataset to DVC
+dvc add "$dataset_path"
+
+# Push the dataset to the specified remote
+dvc push -r "$remote"
+
+echo "Dataset '$dataset_path' tracked and pushed to remote '$remote' successfully."
