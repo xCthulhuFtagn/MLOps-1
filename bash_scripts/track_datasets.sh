@@ -20,6 +20,8 @@ fi
 dvc add "$dataset_path"
 
 # Push the dataset to the specified remote
+git commit -m "Data update for '$bucket'"
+git push
 dvc push -r "$remote"
 
 echo "Dataset '$dataset_path' tracked and pushed to remote '$remote' successfully."

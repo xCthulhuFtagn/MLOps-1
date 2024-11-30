@@ -71,11 +71,11 @@ class DataVersionTrackerService:
         script_path = os.path.join(self.repo_dir, "bash_scripts/track_datasets.sh")
         run_script(script_path, [bucket, temp_path])
 
-        print("file added, deleting file")
-        dir_path = Path(os.path.join(self.repo_dir, "rest-server/datasets"))
-        for item in dir_path.iterdir():
-            if item.is_file():
-                item.unlink()
+        # print("file added, deleting file")
+        # dir_path = Path(os.path.join(self.repo_dir, "rest-server/datasets"))
+        # for item in dir_path.iterdir():
+        #     if item.is_file():
+        #         item.unlink()
 
     def create_bucket(self, bucket_name: str):
         print("creating bucket")

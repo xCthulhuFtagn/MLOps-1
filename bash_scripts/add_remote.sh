@@ -27,9 +27,9 @@ else
 
     # Run the dvc commands to add and configure the remote
     dvc remote add --local "$bucket" s3://"$bucket"
-    dvc remote modify --local "$remote" endpointurl "$endpoint_url"
-    dvc remote modify --local "$remote" access_key_id "$access_key"
-    dvc remote modify --local "$remote" secret_access_key "$secret_key"
+    dvc remote modify --local "$bucket" endpointurl "$endpoint_url"
+    dvc remote modify --local "$bucket" access_key_id "$access_key"
+    dvc remote modify --local "$bucket" secret_access_key "$secret_key"
 
     echo "Remote '$remote' added and configured successfully."
 fi
