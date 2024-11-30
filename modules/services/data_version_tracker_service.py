@@ -1,5 +1,4 @@
 import subprocess
-import dvc.repo
 import os
 import shutil
 import boto3
@@ -22,14 +21,11 @@ def run_script(script_path: str, script_args: List):
 class DataVersionTrackerService:
     def __init__(self, repo_path, endpoint_url, access_key, secret_key):
         self.repo_path = repo_path
+        self.repo_dir = "/".join(self.repo_path.split("/")[:-1])
 
         # Check if the repository is already initialized
-        path = os.path.join("/".join(self.repo_path.split("/")[:-1]), '.dvc')
-        print(path)
-        if not os.path.exists(path):
+        if not os.path.exists(self.repo_path):
             self._init_dvc()
-        # print(f"creating DVC object at {self.repo_path}")
-        # self.DVC = dvc.repo.Repo(self.repo_path)
         self.endpoint_url = endpoint_url
         self.access_key = access_key
         self.secret_key = secret_key
@@ -44,23 +40,21 @@ class DataVersionTrackerService:
 
     def _init_dvc(self):
         print("init dvc")
-        script_path = os.path.join("/".join(self.repo_path.split("/")[:-1]), "bash_scripts/dvc_init.sh")
+        script_path = os.path.join(self.repo_dir, "bash_scripts/dvc_init.sh")
         os.chmod(script_path, 0o755)
-        subprocess.run([script_path], cwd="/".join(self.repo_path.split("/")[:-1]), check=True)
+        subprocess.run([script_path], cwd=self.repo_dir, check=True)
 
-    def add_remote(self, bucket: str):
-        print("adding remote")
-        remote = bucket.replace("s3://", "")
-        print(remote)
-        script_path = os.path.join("/".join(self.repo_path.split("/")[:-1]), "bash_scripts/add_remote.sh")
+    def try_add_remote(self, bucket: str):
+        remote = os.path.join("localhost:9000//", bucket)
+        script_path = os.path.join(self.repo_dir, "bash_scripts/add_remote.sh")
         run_script(script_path, [self.repo_path, bucket, remote, self.endpoint_url, self.access_key, self.secret_key])
 
     def add_dataset(self, file_obj, bucket: str, object_name: str):
         # Create a temporary directory within the DVC repository
-        temp_dir = os.path.join("/".join(self.repo_path.split("/")[:-1]), "datasets")
+        datasets_dir = os.path.join(self.repo_dir, "datasets")
 
         # Define the temporary file path
-        temp_path = os.path.join(temp_dir, object_name)
+        temp_path = os.path.join(datasets_dir, object_name)
         # Check if the bucket exists, create it if it doesn't
 
         # Upload the file to Minio
@@ -72,22 +66,15 @@ class DataVersionTrackerService:
         if  not self.bucket_exists(bucket):
             self.create_bucket(bucket)
 
-        # Check if the remote already exists
-        remote = bucket.replace("s3://", "")
-        try:
-            result = subprocess.run(["dvc", "remote", "list"], cwd="/".join(self.repo_path.split("/")[:-1]), check=True, capture_output=True, text=True)
-        except subprocess.CalledProcessError:
-            self.add_remote(bucket)
-        else:
-            if not any([remote == out for out in result.stdout]):
-                self.add_remote(bucket)
+        self.try_add_remote(bucket)
 
         # Add the dataset to DVC
-        script_path = os.path.join("/".join(self.repo_path.split("/")[:-1]), "bash_scripts/track_datasets.sh")
+        script_path = os.path.join(self.repo_dir, "bash_scripts/track_datasets.sh")
+        remote = "localhost:9000//" + bucket
         run_script(script_path, [remote, temp_path])
 
         print("file added, deleting file")
-        dir_path = Path(os.path.join("/".join(self.repo_path.split("/")[:-1]), "datasets"))
+        dir_path = Path(os.path.join(self.repo_dir, "datasets"))
         for item in dir_path.iterdir():
             if item.is_file():
                 item.unlink()
@@ -107,7 +94,7 @@ class DataVersionTrackerService:
 
     def get_dataset(self, bucket: str, file: str):
         print("getting dataset")
-        remote = bucket.replace("s3://", "")
+        remote = "localhost:9000//" + bucket
         subprocess.run(
             ['dvc', 'get', '-r', remote, file],
             check=True

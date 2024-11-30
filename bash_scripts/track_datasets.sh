@@ -10,5 +10,5 @@ remote=$1
 file=$2
 
 # Run the dvc commands
-dvc add file
-dvc push -r $remote
+dvc add $file
+dvc push -r $remoteecho 
