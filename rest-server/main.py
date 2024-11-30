@@ -20,7 +20,7 @@ authentificator = AuthService()
 model_trainer = ModelTrainService()
 data_version_tracker_service = DataVersionTrackerService(
     repo_path="/home/owner/Documents/DEV/MLOps/HW1/.git",
-    endpoint_url='http://localhost:900',
+    endpoint_url='http://localhost:9000',
     access_key='USERNAME',
     secret_key='PASSWORD'
 )
