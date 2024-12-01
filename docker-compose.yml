@@ -1,5 +1,7 @@
 services:
   minio:
+    # networks:
+    #   - test
     image: minio/minio
     entrypoint: sh
     command: >
@@ -20,11 +22,13 @@ services:
     volumes:
       - minio_data:/data
   server:
+    # networks:
+    #   - test
     build: .
     depends_on: 
       - minio
     ports:
-      - 8000:8000
+      - 8100:8000
     volumes:
       - server_data:/data
     environment:
@@ -33,3 +37,7 @@ services:
 volumes:
   minio_data:
   server_data:
+
+# networks:
+#   test:
+#     driver: bridge
