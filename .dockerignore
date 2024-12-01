@@ -1,0 +1,9 @@
+__pycache__
+.dvc
+classifier_features.csv
+classifier_labels.csv
+download.ipynb
+Readme
+docker-compose.yml
+.git
+.gitignore 

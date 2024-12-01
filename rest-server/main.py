@@ -18,8 +18,11 @@ auth_scheme = HTTPBearer()
 
 authentificator = AuthService()
 model_trainer = ModelTrainService()
+
+print('MINIO_HOST=',os.environ['MINIO_HOST'])
+minio_host = os.environ['MINIO_HOST']
 data_version_tracker_service = DataVersionTrackerService(
-    endpoint_url='http://localhost:9000',
+    endpoint_url=minio_host,
     access_key='USERNAME',
     secret_key='PASSWORD'
 )

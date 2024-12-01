@@ -10,7 +10,7 @@ import os
 from .data_version_tracker_service import DataVersionTrackerService
 
 
-model_dir_path = "/home/owner/Documents/DEV/MLOps/HW1/models"
+model_dir_path = os.path.join(os.getcwd(), "../models")
 regressor_dir_path = f'{model_dir_path}'
 classifier_dir_path = f'{model_dir_path}'
 

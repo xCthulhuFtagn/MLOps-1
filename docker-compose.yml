@@ -18,5 +18,18 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      -minio_data:/data
-      
+      - minio_data:/data
+  server:
+    build: .
+    depends_on: 
+      - minio
+    ports:
+      - 8000:8000
+    volumes:
+      - server_data:/data
+    environment:
+      - MINIO_HOST=http://minio:9000
+
+volumes:
+  minio_data:
+  server_data:
