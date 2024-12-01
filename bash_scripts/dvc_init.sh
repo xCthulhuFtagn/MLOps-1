@@ -4,4 +4,5 @@ dvc init #--subdir
 echo 'dvc init worked'
 git add .dvc
 git commit -m "dvc init"
-dvc config core.autostage true
+git push
+# dvc config core.autostage true

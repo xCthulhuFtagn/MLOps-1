@@ -53,10 +53,10 @@ class ModelTrainService():
             self.status_model[model_class] = str(e)
 
         # Clean up the temporary files
-        if os.path.exists(features_tmp_path):
-            os.remove(features_tmp_path)
-        if os.path.exists(labels_tmp_path):
-            os.remove(labels_tmp_path)
+        # if os.path.exists(features_tmp_path):
+        #     os.remove(features_tmp_path)
+        # if os.path.exists(labels_tmp_path):
+        #     os.remove(labels_tmp_path)
 
 
 

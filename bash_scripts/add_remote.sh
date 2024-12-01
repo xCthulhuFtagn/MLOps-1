@@ -13,8 +13,6 @@ endpoint_url=$3
 access_key=$4
 secret_key=$5
 
-# # Change to the repository directory
-# cd "$repo_path" || { echo "Failed to change directory to $repo_path"; exit 1; }
 
 # Get the list of all DVC remotes
 REMOTE_LIST=$(dvc remote list)
@@ -33,6 +31,7 @@ else
 
     echo "dvc remote add --local '$bucket' s3://'$bucket'"
     echo "dvc remote modify --local '$bucket' endpointurl '$endpoint_url'"
-
-    echo "Remote '$remote' added and configured successfully."
+    echo "remote modify --local "$bucket" access_key_id "$access_key""
+    echo "remote modify --local "$bucket" secret_access_key "$secret_key""
+    echo "Remote '$bucket' added and configured successfully."
 fi

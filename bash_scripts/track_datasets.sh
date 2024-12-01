@@ -18,9 +18,10 @@ dataset_path=$2
 
 # Add the dataset to DVC
 dvc add "$dataset_path"
-# git add ../.dvc
+git add "'$dataset_path'.dvc"
+echo "$dataset_path"
 # Push the dataset to the specified remote
-# git commit -m "Data update for '$bucket'"
+git commit -m "Data update for '$bucket'"
 # git push
 dvc push -r "$remote"
 
