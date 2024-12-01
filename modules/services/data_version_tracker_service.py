@@ -13,8 +13,8 @@ from pathlib import Path
 
 
 class DataVersionTrackerService:
-    def __init__(self, repo_path, endpoint_url, access_key, secret_key):
-        self.repo_path = repo_path
+    def __init__(self, endpoint_url, access_key, secret_key):
+        self.repo_path = os.path.join(os.getcwd(), "../.dvc")
         self.repo_dir = "/".join(self.repo_path.split("/")[:-1])
 
         # Check if the repository is already initialized
@@ -38,7 +38,7 @@ class DataVersionTrackerService:
         subprocess.run(
             [script_path] + script_args,
             check=True,
-            cwd= os.path.join(self.repo_dir, "rest-server")
+            # cwd= os.path.join(self.repo_dir, "rest-server")
         )
 
     def _init_dvc(self):
